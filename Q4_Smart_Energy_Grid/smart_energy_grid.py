@@ -1,9 +1,11 @@
 """
-Question 4: Smart Energy Grid Optimization
-ST5003CEM - Advanced Algorithms
+Question 4 - Smart Energy Grid Optimization
+Goal: allocate energy from multiple sources to district demands per hour
+while minimizing cost and reporting renewable usage and fulfillment.
 """
 
 # Task 1: Model the Input Data (2 marks)
+# These structures define hourly demand and source availability/cost.
 demands = {
     6: {'A': 20, 'B': 15, 'C': 25},
     7: {'A': 22, 'B': 16, 'C': 28},
@@ -26,29 +28,31 @@ sources = [
 # Task 2: Hourly Allocation Algorithm (5 marks) - DP approach
 # Task 3: Greedy Source Prioritization (3 marks)
 """Dynamic Programming Interpretation:
- Each hour is treated as an independent subproblem.
- DP State: dp[h] = optimal (minimum-cost) allocation for hour h
- Transition: dp[h] is computed greedily using available sources
- Justification: Energy cannot be stored between hours, so subproblems
- are independent and optimal substructure holds."""
+Each hour is treated as an independent subproblem.
+DP State: dp[h] = optimal (minimum-cost) allocation for hour h
+Transition: dp[h] is computed greedily using available sources
+Justification: Energy cannot be stored between hours, so subproblems
+are independent and optimal substructure holds.
+"""
  
 def allocate_energy(demands, sources):
+    # Main allocation routine: computes per-hour cost, fulfillment, and source use.
     results = {}
     total_cost = 0
     total_renewable = 0
     total_energy = 0
     
     for hour in sorted(demands.keys()):
-        # DP state: track remaining capacity for each source this hour
+        # DP state: track remaining capacity for each source this hour.
         available = [
             {'id': s['id'], 'type': s['type'], 'capacity': s['capacity'], 'cost': s['cost']}
             for s in sources if hour in s['hours']
         ]
-        # Note: Source capacities are shared across districts within the same hour,
-        # but reset for each new hour (treated as an independent DP subproblem)
+        # Note: capacities are shared across districts within the hour,
+        # but reset for each new hour (independent subproblem).
         
-        # Greedy strategy : prioritize cheaper sources first
-        # This minimizes total cost for each DP subproblem (hour)
+        # Greedy strategy: prioritize cheaper sources first.
+        # This minimizes total cost for each DP subproblem (hour).
         available.sort(key=lambda x: x['cost'])
         
         hour_result = {'districts': {}, 'cost': 0}
@@ -101,6 +105,7 @@ def allocate_energy(demands, sources):
 
 # Task 5: Output Table of Results (3 marks)
 def display_results(results):
+    # Prints per-hour allocation summary for each district.
     print("\nHourly Allocation Results:")
     
     for hour, data in results.items():
@@ -113,6 +118,7 @@ def display_results(results):
 
 # Task 6: Analyze Cost and Resource Usage (4 marks)
 def analyze(results, total_cost, total_renewable, total_energy):
+    # Prints overall cost, renewable share, diesel usage, and complexity notes.
     print("ANALYSIS:")
     
     # Total cost
@@ -148,6 +154,7 @@ def analyze(results, total_cost, total_renewable, total_energy):
     print("  - Demand uncertainty not modeled")
 
 def summary_table(results):
+    # Consolidates total demand vs supplied across all hours and districts.
     total_demand = 0
     total_supplied = 0
     
@@ -168,3 +175,26 @@ results, cost, renewable, energy = allocate_energy(demands, sources)
 display_results(results)
 analyze(results, cost, renewable, energy)
 summary_table(results)
+
+"""
+Output (example):
+Hourly Allocation Results:
+Hour 06:00 (Cost: Rs. ...)
+    District A: ...
+...
+ANALYSIS:
+Total Cost: Rs. ...
+Renewable Energy: ...
+Diesel Usage:
+...
+SUMMARY TABLE:
+Total Demand: ...
+Total Supplied: ...
+Overall Fulfillment: ...
+"""
+
+"""
+Remarks:
+- Exact numbers depend on the configured demands and source capacities.
+- Greedy per-hour allocation is cost-efficient but not globally optimal across hours.
+"""
