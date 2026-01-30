@@ -1,4 +1,36 @@
-# Emergency Network Simulator - Simplified Visual Version
+"""
+Question 5 - Emergency Network Simulator: Interactive GUI Application
+
+Problem Overview:
+This is the main Streamlit application providing an interactive web-based interface
+for the Emergency Communication & Response Network simulator. The GUI allows users to:
+- Visualize the network graph with interactive node placement
+- Execute and visualize algorithms (MST, shortest paths, tree rebalancing, etc.)
+- Simulate network failures and analyze impact
+- Edit the graph structure in real-time
+- View algorithm results and performance metrics
+
+Approach:
+I used Streamlit for rapid web app development with Python. The application is organized
+into multiple pages accessed via sidebar navigation:
+- Dashboard: Main graph visualization and editing
+- Q1: MST computation and visualization
+- Q2: Path finding (Dijkstra, K-disjoint paths)
+- Q3: Tree rebalancing and balance analysis
+- Q4: Failure simulation and resilience testing
+- Q5: Graph coloring for frequency assignment
+
+The app uses session state to persist graph and tree data across page navigations,
+and Pyvis for interactive network visualization with physics simulation.
+
+Key Features:
+- Real-time graph editing
+- Interactive visualization
+- Algorithm execution and results display
+- Performance metrics and statistics
+"""
+
+# Emergency Network Simulator - Interactive GUI
 import streamlit as st
 import pandas as pd
 from graph.graph_model import EmergencyGraph
@@ -177,7 +209,7 @@ elif page == "Q3: Tree Optimizer":
     st.divider()
     
     # Before optimization
-    st.subheader("📊 Current Tree Structure")
+    st.subheader("Current Tree Structure")
     
     col_before, col_info = st.columns([2, 1])
     
@@ -187,15 +219,15 @@ elif page == "Q3: Tree Optimizer":
     with col_info:
         analysis_before = analyze_tree_balance(command_tree)
         st.metric("Height", analysis_before['height'])
-        st.metric("Balanced?", "✓ Yes" if analysis_before['is_balanced'] else "✗ No")
+        st.metric("Balanced?", "Yes" if analysis_before['is_balanced'] else "No")
         
         if not analysis_before['is_balanced']:
-            st.warning("⚠️ Tree is unbalanced - optimize to improve performance")
+            st.warning("Tree is unbalanced - optimize to improve performance")
     
     st.divider()
     
     # Optimization button
-    st.subheader("🔧 Optimization")
+    st.subheader("Optimization")
     
     col_btn = st.columns([1, 3])[0]
     with col_btn:
@@ -204,12 +236,12 @@ elif page == "Q3: Tree Optimizer":
                 balanced = rebalance_tree(command_tree)
                 st.session_state.balanced_tree = balanced
                 st.session_state.optimization_done = True
-            st.success("✓ Rebalancing complete!")
+            st.success("Rebalancing complete!")
     
     # After optimization
     if st.session_state.get('optimization_done'):
         st.divider()
-        st.subheader("📈 Optimized Tree Structure")
+        st.subheader("Optimized Tree Structure")
         
         col_after, col_info2 = st.columns([2, 1])
         
@@ -227,7 +259,7 @@ elif page == "Q3: Tree Optimizer":
         
         # Comparison
         st.divider()
-        st.subheader("📊 Before vs After Comparison")
+        st.subheader("Before vs After Comparison")
         
         comparison_data = {
             "Metric": ["Height", "Balanced", "Max Path Length"],
@@ -457,9 +489,9 @@ elif page == "Q5: Graph Coloring":
         
         if 'coloring' in st.session_state:
             coloring, chromatic, is_valid = st.session_state.coloring
-            st.success("✓ Coloring Complete")
+            st.success("Coloring Complete")
             st.metric("Frequencies Used", chromatic)
-            st.metric("Valid?", "✓ Yes" if is_valid else "✗ No")
+            st.metric("Valid?", "Yes" if is_valid else "No")
             
             st.divider()
             st.write("**Frequency Assignment:**")

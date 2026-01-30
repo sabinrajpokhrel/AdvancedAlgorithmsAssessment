@@ -168,7 +168,7 @@ def visualize_tree(tree, title="Command Hierarchy Tree"):
         return
     
     if not PYVIS_AVAILABLE:
-        st.error("⚠️ Pyvis library not installed. Install with: pip install pyvis")
+        st.error("Pyvis library not installed. Install with: pip install pyvis")
         return
     
     try:
@@ -269,7 +269,7 @@ def visualize_tree(tree, title="Command Hierarchy Tree"):
             st.metric("Longest Path", longest_path)
         with col4:
             is_balanced = tree.is_balanced()
-            st.metric("Balanced", "✓ Yes" if is_balanced else "✗ No")
+            st.metric("Balanced", "Yes" if is_balanced else "No")
         
     except Exception as e:
         st.error(f"Tree visualization error: {str(e)}")
@@ -425,7 +425,7 @@ def render_graph_with_pyvis(graph, height=600, mst_edges=None, highlight_nodes=N
     """
     
     if not PYVIS_AVAILABLE:
-        st.error("⚠️ Pyvis library not installed. Install with: pip install pyvis")
+        st.error("Pyvis library not installed. Install with: pip install pyvis")
         return
     
     try:

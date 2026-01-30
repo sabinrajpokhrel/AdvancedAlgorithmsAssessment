@@ -1,5 +1,7 @@
 """
-Comparison Runner - Executes all three search algorithms and compares results
+Question 6 - Search Algorithms Comparison Tool
+Goal: execute and compare DFS, BFS, and A* algorithms on the same problem
+to demonstrate their differences in optimality, efficiency, and search strategy.
 """
 
 from dfs import DFSSearch

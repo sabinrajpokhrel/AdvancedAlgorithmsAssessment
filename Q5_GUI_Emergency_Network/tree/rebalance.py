@@ -1,9 +1,34 @@
 """
-AVL Tree Rebalancing Algorithm
-Extends Binary Search Tree with automatic rebalancing to maintain O(log n) operations.
+Question 5 - AVL Tree Rebalancing: Self-Balancing Binary Search Tree
 
-AVL Property: For every node, the height difference between left and right
-subtrees is at most 1.
+Problem Overview:
+In a command hierarchy system, we need fast access to command centers by priority.
+A regular BST can become skewed with O(n) height, making operations slow. AVL tree
+solves this by automatically rebalancing after every insert/delete to maintain
+O(log n) height guarantee.
+
+Approach:
+I implemented AVL tree by extending the basic BST with automatic rebalancing using rotations.
+The AVL property states: for every node, |height(left) - height(right)| ≤ 1
+
+After each insertion or deletion, I:
+1. Update height of affected nodes
+2. Calculate balance factor = height(left) - height(right)
+3. If |balance_factor| > 1, apply rotations to restore balance
+
+Four rotation cases:
+- Left-Left: Right rotation
+- Right-Right: Left rotation
+- Left-Right: Left rotation on left child, then right rotation
+- Right-Left: Right rotation on right child, then left rotation
+
+Rotations preserve BST property while reducing height, ensuring O(log n) for all operations.
+
+Time Complexity (guaranteed):
+- Insert: O(log n)
+- Delete: O(log n)
+- Search: O(log n)
+- Rotations: O(1) per rotation
 """
 
 from tree.tree_model import TreeNode, BinarySearchTree
@@ -11,13 +36,13 @@ from tree.tree_model import TreeNode, BinarySearchTree
 
 class AVLTree(BinarySearchTree):
     """
-    Self-balancing binary search tree.
+    Self-balancing binary search tree using AVL rotations.
     Maintains balance through rotations after insert/delete.
     
-    Time Complexity:
-        - Insert: O(log n) - guaranteed
-        - Delete: O(log n) - guaranteed
-        - Search: O(log n) - guaranteed
+    Time Complexity (all operations guaranteed):
+        - Insert: O(log n)
+        - Delete: O(log n)
+        - Search: O(log n)
     Space Complexity: O(n) + O(log n) for recursion stack
     """
     
@@ -340,3 +365,15 @@ def _calculate_optimal_height(n):
         power *= 2
     
     return height
+
+
+"""
+Remarks:
+- AVL tree guarantees O(log n) height, eliminating worst-case O(n) of unbalanced BST.
+- Four rotation types handle all imbalance scenarios after insert/delete operations.
+- Path compression during rotations maintains O(1) rotation cost.
+- Balance factor calculation (left_height - right_height) determines rotation type needed.
+- Rebalancing algorithm converts any BST to AVL by sorting values and building balanced tree.
+- Height tracking at each node enables efficient balance factor computation.
+- AVL trees maintain stricter balance than Red-Black trees (better search, more rotations).
+"""

@@ -35,19 +35,19 @@ def run_all_tests():
             module = __import__(module_name, fromlist=[''])
             # Module will run tests via __main__
         except Exception as e:
-            print(f"❌ Error running {description}: {e}")
+            print(f"Error running {description}: {e}")
             total_failed += 1
     
     print("\n" + "=" * 70)
     print("TEST SUMMARY")
     print("=" * 70)
     print("""
-✅ MST Algorithm Tests:        7 tests passed
-✅ Path Finding Tests:         9 tests passed
-✅ Failure Simulation Tests:  10 tests passed
-✅ Graph Coloring Tests:      10 tests passed
+MST Algorithm Tests:        7 tests passed
+Path Finding Tests:         9 tests passed
+Failure Simulation Tests:  10 tests passed
+Graph Coloring Tests:      10 tests passed
 ────────────────────────────────
-✅ TOTAL:                    36 tests passed
+TOTAL:                    36 tests passed
 
 All tests passed successfully!
 """)
@@ -79,9 +79,9 @@ if __name__ == "__main__":
     
     print("\n" + "=" * 70)
     if all_passed:
-        print("✅ ALL TESTS PASSED - System Ready for Deployment")
+        print("ALL TESTS PASSED - System Ready for Deployment")
     else:
-        print("❌ SOME TESTS FAILED - Please review errors above")
+        print("SOME TESTS FAILED - Please review errors above")
     print("=" * 70)
     
     sys.exit(0 if all_passed else 1)

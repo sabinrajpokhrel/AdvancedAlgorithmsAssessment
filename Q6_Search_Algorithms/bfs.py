@@ -1,9 +1,10 @@
 """
-Breadth-First Search (BFS) Algorithm Implementation
-Problem: Find path from Glogow (start) to Plock (goal) using BFS
+Question 6 - Search Algorithms: Breadth-First Search (BFS)
+Goal: find a path from Glogow (start) to Plock (goal) using BFS,
+exploring level-by-level via queue (FIFO) data structure.
 
 Graph Structure from Diagram (a):
-- Based on straight-line distances between Polish cities
+- Based on actual distances between Polish cities
 - Start: Glogow (blue node)
 - Goal: Plock (red node)
 """
@@ -13,6 +14,7 @@ from collections import deque
 
 class BFSSearch:
     def __init__(self):
+        # Graph representation: adjacency list with edge weights.
         # Graph representation from diagram (a)
         # Format: {city: [(neighbor, distance), ...]}
         self.graph = {
@@ -41,22 +43,23 @@ class BFSSearch:
     def bfs_search(self):
         """
         Breadth-First Search Algorithm
-        Uses a queue (FIFO) for the OPEN list
+        Uses a queue (FIFO) for the OPEN list to explore level-by-level.
         
         Algorithm:
         1. Initialize OPEN (queue) with start node
         2. Initialize CLOSED as empty
         3. While OPEN is not empty:
-           a. Dequeue node from OPEN (first added)
+           a. Dequeue node from OPEN (first added - queue behavior)
            b. If node is goal, return path
            c. Add node to CLOSED
-           d. Add unvisited neighbors to OPEN (queue)
+           d. Enqueue unvisited neighbors to OPEN (queue)
         4. If OPEN becomes empty, no solution exists
         
         BFS Properties:
-        - Explores nodes level by level
-        - Guarantees shortest path (in terms of number of edges)
+        - Explores nodes level by level (layer-wise expansion)
+        - Guarantees shortest path in terms of number of hops/edges
         - Complete: will find solution if one exists
+        - Higher space complexity than DFS due to storing all nodes at current level
         """
         
         # OPEN list (queue) - stores nodes to be explored
@@ -207,3 +210,50 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+Output (example):
+============================================================
+BREADTH-FIRST SEARCH (BFS) ALGORITHM
+============================================================
+Start City: Glogow
+Goal City: Plock
+============================================================
+
+BFS LEVEL-BY-LEVEL EXPANSION
+Level 0: ['Glogow']
+Level 1: ['Leszno', 'Poznan']
+Level 2: ['Wroclaw', 'Bydgoszcz', 'Konin']
+Level 3: ['Opole', 'Wloclawek', 'Kalisz']
+Level 4: ['Plock']
+
+Search Process:
+
+Iteration 1:
+  Current Node: Glogow
+  OPEN (before): ['Leszno', 'Poznan']
+  CLOSED (before): []
+  Action: Added Glogow to CLOSED
+  Action: Added neighbors to OPEN: ['Leszno', 'Poznan']
+  OPEN (after): ['Leszno', 'Poznan']
+  CLOSED (after): ['Glogow']
+
+[... continues until goal is found ...]
+
+============================================================
+GOAL REACHED!
+============================================================
+Path Found: Glogow -> Poznan -> Bydgoszcz -> Wloclawek -> Plock
+Total Distance: 349 km
+Number of Cities in Path: 5
+Iterations Required: 10
+============================================================
+"""
+
+"""
+Remarks:
+- BFS explores nodes level-by-level using queue (FIFO) data structure.
+- Guarantees minimum hop path (fewest number of edges), not necessarily shortest distance.
+- Uses more memory than DFS as it must store all nodes at the current level.
+- Suitable when solution is likely to be shallow in the search tree.
+"""

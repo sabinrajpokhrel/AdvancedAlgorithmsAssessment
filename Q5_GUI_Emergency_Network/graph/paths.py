@@ -1,11 +1,31 @@
 """
-Shortest Path Algorithms - RAW Implementation
-No external algorithm libraries are used.
+Question 5 - Shortest Path Algorithms: Dijkstra, BFS, and K-Disjoint Paths
 
-Implements:
-1. Dijkstra's Algorithm - O(V^2) for dense graphs
-2. Breadth-First Search (BFS) - O(V + E)
-3. K-Disjoint Paths using Max Flow approach
+Problem Overview:
+Find the shortest route between two cities in the emergency network. In real scenarios,
+we also need alternative routes in case the primary route fails. This module implements:
+1. Dijkstra's algorithm for weighted shortest paths
+2. BFS for unweighted shortest paths  
+3. K-disjoint paths for finding multiple non-overlapping routes
+
+Approach:
+I implemented three complementary pathfinding algorithms:
+
+1. **Dijkstra's Algorithm**: Uses a greedy approach with distance relaxation. I maintain
+   a set of unvisited nodes and repeatedly select the node with minimum distance, updating
+   distances to its neighbors. This guarantees the shortest path for non-negative weights.
+
+2. **BFS (Breadth-First Search)**: Uses queue-based level-order exploration. Perfect for
+   unweighted graphs or when we want minimum hop count rather than minimum distance.
+
+3. **K-Disjoint Paths**: Uses max-flow approach (Ford-Fulkerson) with unit capacities.
+   Each augmenting path found represents one edge-disjoint route. This ensures redundancy
+   for critical emergency routing.
+
+Time Complexities:
+- Dijkstra: O(V²) with array, O((V+E) log V) with heap
+- BFS: O(V + E)
+- K-Disjoint: O(K × (V+E))
 """
 
 from collections import deque
@@ -16,7 +36,12 @@ def dijkstra_shortest_path(graph, start, end):
     """
     Computes shortest path between two nodes using Dijkstra's algorithm.
     
-    Time Complexity: O(V^2) using array, O((V + E) log V) using min-heap
+    Uses greedy selection and edge relaxation:
+    - Select unvisited node with minimum distance
+    - Relax edges: update neighbor distances if shorter path found
+    - Repeat until destination reached
+    
+    Time Complexity: O(V²) using array-based implementation
     Space Complexity: O(V)
     
     Parameters:
@@ -25,13 +50,13 @@ def dijkstra_shortest_path(graph, start, end):
         end: Destination city
     
     Returns:
-        path: List of cities in shortest path
-        distance: Total distance of shortest path
+        path: List of cities in shortest path (None if unreachable)
+        distance: Total distance of shortest path (inf if unreachable)
     """
     
-    # Initialize distances
+    # Initialize distances to infinity except start node
     distances = {}
-    previous = {}
+    previous = {}  # For path reconstruction
     unvisited = set()
     
     for city in graph.get_all_cities():
@@ -42,7 +67,7 @@ def dijkstra_shortest_path(graph, start, end):
     distances[start] = 0
     
     while unvisited:
-        # Find unvisited node with minimum distance
+        # Greedy choice: select unvisited node with minimum distance
         current = None
         min_dist = float('inf')
         
@@ -51,15 +76,17 @@ def dijkstra_shortest_path(graph, start, end):
                 min_dist = distances[city]
                 current = city
         
+        # No reachable unvisited nodes remain
         if current is None or distances[current] == float('inf'):
             break
         
+        # Reached destination
         if current == end:
             break
         
         unvisited.remove(current)
         
-        # Check neighbors
+        # Edge relaxation: update distances to neighbors
         for neighbor, weight in graph.get_active_neighbors(current):
             if neighbor in unvisited:
                 new_distance = distances[current] + weight
@@ -68,7 +95,7 @@ def dijkstra_shortest_path(graph, start, end):
                     distances[neighbor] = new_distance
                     previous[neighbor] = current
     
-    # Reconstruct path
+    # Reconstruct path by backtracking through previous pointers
     path = []
     current = end
     
@@ -309,3 +336,15 @@ def get_affected_nodes(graph, disabled_node):
                 affected.update(component)
     
     return affected
+
+
+"""
+Remarks:
+- Dijkstra's algorithm guarantees optimal shortest path for non-negative edge weights.
+- Array-based implementation is O(V²), suitable for dense graphs; heap-based would be O((V+E) log V).
+- BFS finds minimum hop count, useful when all edges have equal weight or cost is measured in steps.
+- K-disjoint paths provide redundancy: if one route fails, alternatives are available without overlap.
+- Ford-Fulkerson approach for disjoint paths is elegant: max-flow with unit capacities = edge-disjoint paths.
+- All algorithms respect disabled nodes and vulnerable edges for realistic failure scenarios.
+- Path reconstruction uses previous pointer array for efficient backtracking from destination to source.
+"""

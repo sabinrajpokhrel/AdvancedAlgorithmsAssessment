@@ -1,6 +1,7 @@
 """
-A* Search Algorithm Implementation
-Problem: Find optimal path from Glogow (start) to Plock (goal) using A*
+Question 6 - Search Algorithms: A* Search
+Goal: find the optimal (shortest distance) path from Glogow to Plock using A*,
+guided by heuristic function (straight-line distances) to efficiently explore.
 
 Diagram (a): Actual road distances (for g(n) - cost from start)
 Diagram (b): Straight-line distances (for h(n) - heuristic to goal)
@@ -9,6 +10,8 @@ A* uses f(n) = g(n) + h(n) where:
 - g(n) = actual cost from start to node n
 - h(n) = estimated cost from node n to goal (heuristic)
 - f(n) = estimated total cost through node n
+
+A* is optimal when heuristic is admissible (never overestimates).
 """
 
 import heapq
@@ -17,6 +20,7 @@ from typing import Dict, List, Tuple, Set
 
 class AStarSearch:
     def __init__(self):
+        # Graph from diagram (a): actual road distances between cities.
         # Graph from diagram (a) - actual road distances
         # Format: {city: [(neighbor, actual_distance), ...]}
         self.graph = {
@@ -67,26 +71,27 @@ class AStarSearch:
     def a_star_search(self):
         """
         A* Search Algorithm
-        Uses a priority queue ordered by f(n) = g(n) + h(n)
+        Uses a priority queue ordered by f(n) = g(n) + h(n) to prioritize promising nodes.
         
         Algorithm:
         1. Initialize OPEN with start node (priority = f(start))
         2. Initialize CLOSED as empty
         3. While OPEN is not empty:
-           a. Remove node with lowest f(n) from OPEN
+           a. Remove node with lowest f(n) from OPEN (best candidate)
            b. If node is goal, return path
            c. Add node to CLOSED
            d. For each neighbor:
               - Calculate g(neighbor) = g(node) + cost(node, neighbor)
               - Calculate f(neighbor) = g(neighbor) + h(neighbor)
               - If neighbor not in OPEN or CLOSED, add to OPEN
-              - If neighbor in OPEN with higher f, update it
+              - If neighbor in OPEN with higher f, update it (path improvement)
         4. If OPEN becomes empty, no solution exists
         
         Properties:
-        - Optimal: Finds shortest path if heuristic is admissible
+        - Optimal: Finds shortest path if heuristic is admissible (h(n) ≤ true cost)
         - Complete: Always finds solution if one exists
-        - Efficient: Expands fewer nodes than uninformed search
+        - Efficient: Expands fewer nodes than uninformed search due to heuristic guidance
+        - Best choice for weighted graphs with good heuristic available
         """
         
         # OPEN list (priority queue) - stores (f_score, counter, city, path, g_score)
@@ -315,3 +320,72 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+Output (example):
+============================================================
+A* SEARCH ALGORITHM
+============================================================
+Start City: Glogow
+Goal City: Plock
+
+A* Formula: f(n) = g(n) + h(n)
+  g(n) = actual cost from start to node n
+  h(n) = estimated cost from node n to goal (heuristic)
+  f(n) = estimated total cost through node n
+============================================================
+
+Heuristic Function (Straight-line distances to Plock):
+  h(Bydgoszcz) = 180 km
+  h(Glogow) = 350 km
+  h(Konin) = 200 km
+  h(Plock) = 0 km
+  h(Poznan) = 270 km
+  h(Wloclawek) = 55 km
+  [... other cities ...]
+============================================================
+
+Search Process:
+
+Iteration 1:
+  Current Node: Glogow
+  g(Glogow) = 0 km (cost from start)
+  h(Glogow) = 350 km (estimated cost to goal)
+  f(Glogow) = 350 km (total estimated cost)
+  OPEN (before): []
+  CLOSED (before): []
+  Action: Added Glogow to CLOSED
+  Action: Expanded neighbors:
+    - Leszno(g=45, h=320, f=365)
+    - Poznan(g=90, h=270, f=360)
+  OPEN (after): ['Poznan(f=360)', 'Leszno(f=365)']
+  CLOSED (after): ['Glogow']
+
+[... continues until goal is found ...]
+
+============================================================
+GOAL REACHED!
+============================================================
+Optimal Path Found: Glogow -> Poznan -> Bydgoszcz -> Wloclawek -> Plock
+Total Distance: 395 km
+Number of Cities in Path: 5
+Iterations Required: 5
+============================================================
+
+Path Analysis:
+  Glogow -> Poznan: 90 km
+  Poznan -> Bydgoszcz: 140 km
+  Bydgoszcz -> Wloclawek: 110 km
+  Wloclawek -> Plock: 55 km
+  Total: 395 km
+============================================================
+"""
+
+"""
+Remarks:
+- A* combines benefits of uniform-cost search (optimality) and greedy search (efficiency).
+- The straight-line distance heuristic is admissible (never overestimates), guaranteeing optimal path.
+- A* expands fewer nodes than BFS/DFS by prioritizing nodes with lower f(n) values.
+- Perfect for robot parcel delivery: finds shortest route efficiently using geographic heuristic.
+- Superior to DFS (not optimal) and BFS (explores too many nodes) for weighted graphs.
+"""

@@ -1,8 +1,30 @@
 """
-Binary Search Tree Model for Command Hierarchy
-Supports insertion, deletion, search, and traversal operations.
+Question 5 - Binary Search Tree: Command Hierarchy Data Structure
 
-Base tree structure used by AVL tree for rebalancing.
+Problem Overview:
+This module implements a Binary Search Tree (BST) for organizing the command hierarchy
+in the emergency response system. Each node represents a command center with a priority
+value, and the BST property ensures efficient lookup, insertion, and deletion operations.
+
+Approach:
+I implemented a standard BST where for each node:
+- All values in left subtree < node value
+- All values in right subtree > node value
+
+The tree supports:
+1. Insertion: Add new command centers maintaining BST property
+2. Deletion: Remove command centers with three cases (leaf, one child, two children)
+3. Search: Find command centers by priority value
+4. Traversal: In-order, pre-order, post-order for reporting
+
+The BST serves as the foundation for AVL tree rebalancing, which ensures O(log n)
+height for all operations instead of potentially O(n) for skewed trees.
+
+Time Complexity (unbalanced):
+- Insert: O(h) where h is height (worst O(n), average O(log n))
+- Delete: O(h)
+- Search: O(h)
+- Traversal: O(n)
 """
 
 
@@ -14,28 +36,29 @@ class TreeNode:
         Initialize a tree node.
         
         Parameters:
-            value: Data stored in node (e.g., command center name)
-            height: Height of node (for AVL balancing)
+            value: Data stored in node (command priority or identifier)
+            height: Height of node (used for AVL balancing)
         """
         self.value = value
         self.left = None
         self.right = None
         self.height = height
-        self.level = 0  # For visualization
+        self.level = 0  # For visualization purposes
     
     def is_leaf(self):
-        """Check if node is a leaf."""
+        """Check if node is a leaf (no children)."""
         return self.left is None and self.right is None
 
 
 class BinarySearchTree:
     """
     Basic Binary Search Tree implementation for command hierarchy.
+    Maintains BST property: left < node < right
     
-    Time Complexity:
-        - Insert: O(n) worst case, O(log n) average
-        - Delete: O(n) worst case, O(log n) average
-        - Search: O(n) worst case, O(log n) average
+    Time Complexity (without balancing):
+        - Insert: O(h) where h = height (worst O(n), average O(log n))
+        - Delete: O(h)
+        - Search: O(h)
         - Traversal: O(n)
     """
     
@@ -45,7 +68,8 @@ class BinarySearchTree:
     
     def insert(self, value):
         """
-        Insert a value into the tree.
+        Insert a value into the tree maintaining BST property.
+        Duplicates are not inserted.
         
         Parameters:
             value: Value to insert
@@ -63,7 +87,7 @@ class BinarySearchTree:
         return True
     
     def _insert_recursive(self, node, value):
-        """Recursive helper for insertion."""
+        """Recursive helper for insertion following BST property."""
         if node is None:
             return TreeNode(value)
         
@@ -79,6 +103,7 @@ class BinarySearchTree:
     def delete(self, value):
         """
         Delete a value from the tree.
+        Handles three cases: leaf, one child, two children.
         
         Parameters:
             value: Value to delete
@@ -97,7 +122,10 @@ class BinarySearchTree:
         return False
     
     def _delete_recursive(self, node, value):
-        """Recursive helper for deletion."""
+        """
+        Recursive helper for deletion.
+        Uses in-order successor for two-child case.
+        """
         if node is None:
             return None
         
@@ -301,3 +329,14 @@ class BinarySearchTree:
         result.append((node.value, level, node))
         self._collect_nodes(node.left, level + 1, result)
         self._collect_nodes(node.right, level + 1, result)
+
+
+"""
+Remarks:
+- BST provides efficient average-case O(log n) operations for balanced trees.
+- Worst case O(n) occurs when tree becomes skewed (e.g., inserting sorted data).
+- Delete operation handles three cases: leaf (easy), one child (bypass), two children (successor replacement).
+- In-order traversal of BST produces sorted sequence - useful for reporting.
+- Height tracking enables balance factor calculation for AVL tree extension.
+- This base implementation is extended by AVL tree to guarantee O(log n) operations.
+"""

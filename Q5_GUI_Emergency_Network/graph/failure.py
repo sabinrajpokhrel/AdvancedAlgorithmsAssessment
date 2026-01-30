@@ -1,8 +1,31 @@
 """
-Failure Simulation & Impact Analysis Module
-RAW implementation without external libraries.
+Question 5 - Network Failure Simulation: Impact Analysis and Resilience Testing
 
-Tracks network impacts when nodes/edges fail and recalculates connectivity.
+Problem Overview:
+Emergency networks must be resilient to failures. This module simulates what happens
+when cities (nodes) or roads (edges) fail, analyzing the impact on network connectivity
+and identifying critical infrastructure that requires protection or redundancy.
+
+Approach:
+I implemented iterative failure simulation that:
+1. Temporarily disables specified nodes or edges
+2. Recomputes connectivity using BFS to find disconnected components
+3. Calculates affected nodes and lost connections
+4. Identifies critical nodes whose failure causes maximum disruption
+5. Detects cascade failures (failures that propagate to other nodes)
+
+The analysis provides quantitative metrics:
+- Connectivity loss percentage
+- Number of isolated nodes
+- Alternative route availability
+- Critical node identification
+
+This information guides infrastructure investment and disaster preparedness planning.
+
+Time Complexity:
+- Node failure analysis: O(V²) - pathfinding between all pairs
+- Edge failure analysis: O(V²)
+- Connectivity check: O(V + E) using BFS
 """
 
 from collections import deque
@@ -12,6 +35,7 @@ from graph.paths import dijkstra_shortest_path, get_affected_nodes
 class FailureAnalyzer:
     """
     Analyzes network impact when nodes or edges fail.
+    Provides resilience metrics and identifies critical infrastructure.
     """
     
     def __init__(self, graph):
@@ -237,3 +261,15 @@ def calculate_path_reliability(graph, path):
         reliability *= edge_reliability
     
     return reliability
+
+
+"""
+Remarks:
+- Failure simulation provides quantitative resilience metrics for network planning.
+- Node failure impact measured by connectivity loss percentage and isolated nodes.
+- Critical node identification helps prioritize infrastructure protection investments.
+- Cascade failure detection prevents catastrophic network collapse scenarios.
+- Path reliability calculation guides emergency routing decisions during disasters.
+- BFS-based connectivity analysis is efficient at O(V + E) per failure scenario.
+- Temporary disable/enable mechanism allows testing without modifying graph structure.
+"""

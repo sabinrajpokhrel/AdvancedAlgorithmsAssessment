@@ -1,9 +1,10 @@
 """
-Depth-First Search (DFS) Algorithm Implementation
-Problem: Find path from Glogow (start) to Plock (goal) using DFS
+Question 6 - Search Algorithms: Depth-First Search (DFS)
+Goal: find a path from Glogow (start) to Plock (goal) using DFS,
+exploring deep paths first via stack (LIFO) data structure.
 
 Graph Structure from Diagram (a):
-- Based on straight-line distances between Polish cities
+- Based on actual distances between Polish cities
 - Start: Glogow (blue node)
 - Goal: Plock (red node)
 """
@@ -13,6 +14,7 @@ from collections import deque
 
 class DFSSearch:
     def __init__(self):
+        # Graph representation: adjacency list with edge weights.
         # Graph representation from diagram (a)
         # Format: {city: [(neighbor, distance), ...]}
         self.graph = {
@@ -41,17 +43,19 @@ class DFSSearch:
     def dfs_search(self):
         """
         Depth-First Search Algorithm
-        Uses a stack (LIFO) for the OPEN list
+        Uses a stack (LIFO) for the OPEN list to explore deep paths first.
         
         Algorithm:
         1. Initialize OPEN (stack) with start node
         2. Initialize CLOSED as empty
         3. While OPEN is not empty:
-           a. Pop node from OPEN (most recently added)
+           a. Pop node from OPEN (most recently added - stack behavior)
            b. If node is goal, return path
            c. Add node to CLOSED
-           d. Add unvisited neighbors to OPEN (stack)
+           d. Push unvisited neighbors to OPEN (stack)
         4. If OPEN becomes empty, no solution exists
+        
+        Note: DFS does not guarantee shortest path but uses less memory than BFS.
         """
         
         # OPEN list (stack) - stores nodes to be explored
@@ -173,3 +177,43 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+"""
+Output (example):
+============================================================
+DEPTH-FIRST SEARCH (DFS) ALGORITHM
+============================================================
+Start City: Glogow
+Goal City: Plock
+============================================================
+
+Search Process:
+
+Iteration 1:
+  Current Node: Glogow
+  OPEN (before): []
+  CLOSED (before): []
+  Action: Added Glogow to CLOSED
+  Action: Added neighbors to OPEN: ['Poznan', 'Leszno']
+  OPEN (after): ['Poznan', 'Leszno']
+  CLOSED (after): ['Glogow']
+
+[... continues until goal is found ...]
+
+============================================================
+GOAL REACHED!
+============================================================
+Path Found: Glogow -> Poznan -> Bydgoszcz -> Wloclawek -> Plock
+Total Distance: 349 km
+Number of Cities in Path: 5
+Iterations Required: 5
+============================================================
+"""
+
+"""
+Remarks:
+- DFS explores deep paths first using stack (LIFO) data structure.
+- Does not guarantee optimal (shortest) path; finds 'a' solution, not necessarily the best.
+- Memory efficient compared to BFS as it stores only one path at a time.
+- Path found depends on the order neighbors are explored.
+"""

@@ -1,23 +1,45 @@
 """
-Graph Coloring Algorithm - RAW Implementation
-Assigns frequencies/channels to network hubs such that no adjacent hubs
-use the same frequency (Chromatic Number problem).
+Question 5 (Bonus) - Graph Coloring: Frequency Assignment for Communication
 
-Uses greedy coloring with Welsh-Powell heuristic for better results.
+Problem Overview:
+In an emergency network, adjacent communication hubs cannot use the same frequency
+band as it would cause interference. This is modeled as a graph coloring problem:
+assign colors (frequencies) to nodes (hubs) such that no two adjacent nodes have
+the same color, using minimum number of colors.
+
+Approach:
+I implemented the Welsh-Powell greedy heuristic which provides good approximation
+for the chromatic number (minimum colors needed). The algorithm:
+
+1. Sort nodes by degree in descending order (high-degree nodes colored first)
+2. For each node, assign the smallest available color not used by neighbors
+3. Continue until all nodes are colored
+
+Why Welsh-Powell?
+- Greedy approach is efficient: O(V² + E)
+- Degree-based ordering reduces colors needed
+- Optimal coloring is NP-complete, so approximation is practical
+- Works well for planar and sparse graphs common in infrastructure networks
+
+The coloring is validated to ensure no adjacent nodes share colors, and efficiency
+metrics are provided comparing used colors vs theoretical bounds.
+
+Time Complexity: O(V² + E) for coloring + validation
+Space Complexity: O(V) for color assignments
 """
 
 
 def greedy_graph_coloring(graph):
     """
-    Assigns colors to graph nodes using greedy algorithm.
+    Assigns colors (frequencies) to graph nodes using greedy algorithm.
     No adjacent nodes receive the same color.
     
     Algorithm: Welsh-Powell Heuristic
-    1. Order vertices by degree (highest first)
+    1. Order vertices by degree (highest first) - reduces colors needed
     2. Assign smallest available color to each vertex
     3. Ensure no adjacent vertex has same color
     
-    Time Complexity: O(V^2 + E) in worst case
+    Time Complexity: O(V² + E) in worst case
     Space Complexity: O(V)
     
     Parameters:
@@ -25,7 +47,7 @@ def greedy_graph_coloring(graph):
     
     Returns:
         coloring: Dictionary mapping node -> color (integer)
-        chromatic_number: Minimum colors needed
+        chromatic_number: Minimum colors needed (upper bound)
     """
     
     all_cities = graph.get_all_cities()
@@ -263,3 +285,15 @@ def multi_coloring_heuristics(graph):
             best_coloring = coloring
     
     return best_coloring, best_chromatic, all_results
+
+
+"""
+Remarks:
+- Graph coloring (chromatic number problem) is NP-complete - no known polynomial exact algorithm.
+- Welsh-Powell heuristic provides good approximation by prioritizing high-degree nodes.
+- Greedy approach guarantees at most max_degree + 1 colors (often much better in practice).
+- For planar graphs, Four Color Theorem guarantees 4 colors sufficient (but algorithm may use more).
+- Validation ensures no frequency interference between adjacent communication hubs.
+- Real-world frequency bands (2.4, 3.6, 5.8, 28, 39 GHz) mapped from integer colors.
+- Algorithm respects disabled nodes and vulnerable edges for realistic scenarios.
+"""

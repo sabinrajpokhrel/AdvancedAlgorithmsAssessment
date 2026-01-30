@@ -1,29 +1,24 @@
 """
-Multithreaded Sorting Application
-----------------------------------
-This program divides a list of integers into two halves, sorts each half
-using separate threads, and then merges them using a third thread.
-
-Algorithm:
-1. Split the original list into two equal-sized sublists
-2. Create two sorting threads to sort each sublist
-3. Create a merge thread to combine the sorted sublists
-4. Output the final sorted list
+Question 5(b) - Multithreaded Sorting Application
+Goal: divide a list into two halves, sort each half in parallel using
+two sorting threads, then merge the sorted halves using a third merging thread.
+This demonstrates concurrent execution and safe shared-memory access.
 """
 
 import threading
 import time
 
 
-# Global arrays
+# Global arrays shared across all threads for inter-thread communication.
 original_array = []
 sorted_array = []
-lock = threading.Lock()
+lock = threading.Lock()  # Protects shared data during concurrent writes.
 
 
 def merge_sort_algorithm(arr):
     """
-    Standard merge sort implementation for individual sublists.
+    Standard merge sort for individual sublists.
+    Each sorting thread runs this algorithm independently.
     Time Complexity: O(n log n)
     """
     if len(arr) <= 1:
@@ -39,6 +34,7 @@ def merge_sort_algorithm(arr):
 def merge(left, right):
     """
     Merge two sorted lists into one sorted list.
+    Used by both merge_sort and the merging thread.
     """
     result = []
     i = j = 0
@@ -58,9 +54,10 @@ def merge(left, right):
 
 def sorting_thread(thread_id, start_index, end_index):
     """
-    Sorting thread function that sorts a sublist of the global array.
+    Each thread works independently on one half of the data.
     
     Args:
+        thread_id: Identifier for the thread (0 or 1)
         thread_id: Identifier for the thread
         start_index: Starting index in the global array
         end_index: Ending index in the global array (exclusive)
@@ -84,7 +81,8 @@ def sorting_thread(thread_id, start_index, end_index):
 
 
 def merging_thread():
-    """
+    """that merges two sorted sublists into the final sorted array.
+    This third thread waits for both sorting threads to complete before merging
     Merging thread function that merges two sorted sublists into the final sorted array.
     """
     print("\nMerging Thread started: merging two sorted sublists")
@@ -110,7 +108,8 @@ def merging_thread():
 
 
 def multithreaded_sort(input_list):
-    """
+    """orchestrator: creates sorting threads, waits for completion,
+    then creates the merging thread to produce the final sorted list
     Main function to perform multithreaded sorting.
     
     Args:
@@ -229,3 +228,52 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("Program completed successfully!")
     print("=" * 60)
+
+"""
+Output (example for test case [7, 12, 19, 3, 18, 4, 2, 6, 15, 8]):
+============================================================
+MULTITHREADED SORTING APPLICATION
+============================================================
+Original list: [7, 12, 19, 3, 18, 4, 2, 6, 15, 8]
+List size: 10
+============================================================
+
+Phase 1: Creating sorting threads...
+Sorting Thread 0 started: sorting elements from index 0 to 4
+Sorting Thread 0: Original sublist = [7, 12, 19, 3, 18]
+Sorting Thread 1 started: sorting elements from index 5 to 9
+Sorting Thread 1: Original sublist = [4, 2, 6, 15, 8]
+Sorting Thread 0: Sorted sublist = [3, 7, 12, 18, 19]
+Sorting Thread 0 completed
+Sorting Thread 1: Sorted sublist = [2, 4, 6, 8, 15]
+Sorting Thread 1 completed
+
+============================================================
+Phase 1 Complete: Both sorting threads finished
+Array after sorting threads: [3, 7, 12, 18, 19, 2, 4, 6, 8, 15]
+============================================================
+
+Phase 2: Creating merging thread...
+Merging Thread started: merging two sorted sublists
+Merging Thread: Left half = [3, 7, 12, 18, 19]
+Merging Thread: Right half = [2, 4, 6, 8, 15]
+Merging Thread: Merged result = [2, 3, 4, 6, 7, 8, 12, 15, 18, 19]
+Merging Thread completed
+
+============================================================
+Phase 2 Complete: Merging thread finished
+============================================================
+
+Final sorted list: [2, 3, 4, 6, 7, 8, 12, 15, 18, 19]
+============================================================
+
+✓ VERIFICATION: Sorting is CORRECT!
+"""
+
+"""
+Remarks:
+- The two sorting threads run concurrently, reducing sorting time compared to single-threaded.
+- Thread execution order may vary between runs, but the final result remains consistent.
+- Lock usage ensures safe concurrent access to shared global arrays.
+- The diagram in the question matches this implementation: two sorting threads followed by one merge thread.
+"""
