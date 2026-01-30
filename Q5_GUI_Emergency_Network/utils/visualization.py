@@ -6,6 +6,7 @@ Provides functions to render graphs and trees in the UI.
 import streamlit as st
 import json
 import os
+import tempfile
 from pathlib import Path
 try:
     from pyvis.network import Network
@@ -154,7 +155,7 @@ def visualize_coloring(coloring, color_to_frequency_func=None, title="Graph Colo
 
 def visualize_tree(tree, title="Command Hierarchy Tree"):
     """
-    Display tree structure in hierarchical format.
+    Display tree structure as an interactive network graph using pyvis.
     
     Parameters:
         tree: BinarySearchTree or AVLTree
@@ -166,37 +167,114 @@ def visualize_tree(tree, title="Command Hierarchy Tree"):
         st.info("Tree is empty")
         return
     
-    # Collect nodes with levels
-    nodes_by_level = {}
+    if not PYVIS_AVAILABLE:
+        st.error("⚠️ Pyvis library not installed. Install with: pip install pyvis")
+        return
     
-    def collect_nodes(node, level):
-        if node is None:
-            return
+    try:
+        # Create pyvis network for tree
+        net = Network(height="450px", width="100%", directed=True, notebook=False)
+
+        # Collect nodes and edges
+        edges_list = []
+        node_values = set()
+
+        def traverse(node):
+            if node is None:
+                return
+
+            node_values.add(node.value)
+
+            if node.left:
+                edges_list.append((node.value, node.left.value))
+                traverse(node.left)
+
+            if node.right:
+                edges_list.append((node.value, node.right.value))
+                traverse(node.right)
+
+        traverse(tree.root)
+
+        # Add nodes first
+        for value in node_values:
+            net.add_node(
+                str(value),
+                label=str(value),
+                title=f"Value: {value}",
+                color="#1f77b4",
+                size=30,
+                font={'size': 16, 'color': 'white', 'bold': True},
+                shape='circle'
+            )
+
+        # Add edges after all nodes exist
+        for parent, child in edges_list:
+            net.add_edge(str(parent), str(child), arrows="to", color="#888888", width=2)
+
+        # Structured hierarchical layout (root on top, children below)
+        net.set_options("""
+        {
+          "layout": {
+            "hierarchical": {
+              "enabled": true,
+              "direction": "UD",
+              "sortMethod": "directed",
+              "levelSeparation": 120,
+              "nodeSpacing": 140,
+              "treeSpacing": 200
+            }
+          },
+          "physics": {
+            "enabled": false
+          }
+        }
+        """)
         
-        if level not in nodes_by_level:
-            nodes_by_level[level] = []
+        # Generate HTML file
+        html_file = tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False)
+        html_path = html_file.name
+        html_file.close()
         
-        nodes_by_level[level].append(node.value)
-        collect_nodes(node.left, level + 1)
-        collect_nodes(node.right, level + 1)
-    
-    collect_nodes(tree.root, 0)
-    
-    # Display level by level
-    for level in sorted(nodes_by_level.keys()):
-        indent = "  " * level
-        nodes = nodes_by_level[level]
-        nodes_str = ", ".join(str(n) for n in nodes)
-        st.write(f"{indent}└─ Level {level}: {nodes_str}")
-    
-    # Show metrics
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Height", tree.get_height())
-    with col2:
-        st.metric("Size", tree.size)
-    with col3:
-        st.metric("Balanced", "✓" if tree.is_balanced() else "✗")
+        # Save network to HTML file
+        net.save_graph(html_path)
+        
+        # Read HTML content
+        with open(html_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        
+        # Clean up temp file
+        try:
+            os.unlink(html_path)
+        except:
+            pass
+        
+        # Display in Streamlit
+        st.components.v1.html(html_content, height=500, scrolling=False)
+        
+        # Calculate longest path (height from root)
+        def get_height(node):
+            if node is None:
+                return 0
+            return 1 + max(get_height(node.left), get_height(node.right))
+        
+        longest_path = get_height(tree.root)
+        
+        # Show metrics
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Nodes", tree.size)
+        with col2:
+            st.metric("Height", tree.get_height())
+        with col3:
+            st.metric("Longest Path", longest_path)
+        with col4:
+            is_balanced = tree.is_balanced()
+            st.metric("Balanced", "✓ Yes" if is_balanced else "✗ No")
+        
+    except Exception as e:
+        st.error(f"Tree visualization error: {str(e)}")
+        import traceback
+        st.code(traceback.format_exc())
 
 
 def visualize_failure_analysis(analysis, title="Failure Analysis Results"):
@@ -338,9 +416,12 @@ def create_algorithm_info_panel(algorithm_name):
         st.write(f"**Approach:** {info['desc']}")
 
 
-def render_graph_with_pyvis(graph, height=600, mst_edges=None):
+def render_graph_with_pyvis(graph, height=600, mst_edges=None, highlight_nodes=None, highlight_edges=None, node_colors=None):
     """
     Render an interactive network graph visualization using pyvis.
+    
+    Parameters:
+        node_colors: Dictionary mapping node -> color for graph coloring visualization
     """
     
     if not PYVIS_AVAILABLE:
@@ -361,11 +442,16 @@ def render_graph_with_pyvis(graph, height=600, mst_edges=None):
             return
             
         for node in nodes:
+            node_color = '#FF6B6B'
+            if node_colors and node in node_colors:
+                node_color = node_colors[node]
+            elif highlight_nodes and node in highlight_nodes:
+                node_color = highlight_nodes[node]
             net.add_node(
                 node, 
                 label=str(node), 
                 size=40, 
-                color='#FF6B6B',
+                color=node_color,
                 font={'size': 18, 'color': 'white', 'bold': True},
                 shape='circle'
             )
@@ -375,6 +461,12 @@ def render_graph_with_pyvis(graph, height=600, mst_edges=None):
         if mst_edges:
             for u, v, w in mst_edges:
                 mst_edge_set.add(tuple(sorted([u, v])))
+
+        # Highlight edge set for quick lookup
+        highlight_edge_set = set()
+        if highlight_edges:
+            for u, v in highlight_edges:
+                highlight_edge_set.add(tuple(sorted([u, v])))
         
         # Add edges
         edges = graph.get_all_edges()
@@ -387,7 +479,10 @@ def render_graph_with_pyvis(graph, height=600, mst_edges=None):
             added_edges.add(edge_key)
             
             # Determine edge color
-            if edge_key in mst_edge_set:
+            if edge_key in highlight_edge_set:
+                edge_color = '#FFD700'  # Gold for highlighted path
+                edge_width = 5
+            elif edge_key in mst_edge_set:
                 edge_color = '#00FF00'  # Green for MST edges
                 edge_width = 4
             elif graph.is_road_vulnerable(u, v):

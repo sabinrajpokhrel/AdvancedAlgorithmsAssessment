@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from graph.graph_model import EmergencyGraph
 from graph.mst import kruskal_mst
-from graph.paths import dijkstra_shortest_path, find_k_disjoint_paths
+from graph.paths import find_k_disjoint_paths, dijkstra_shortest_path
 from graph.failure import FailureAnalyzer
 from graph.coloring import greedy_graph_coloring, validate_coloring, analyze_coloring_efficiency
 from tree.tree_model import BinarySearchTree
@@ -127,11 +127,11 @@ if page == "Q1: MST":
         render_graph_with_pyvis(graph, height=500, mst_edges=mst_edges_to_highlight)
 
 # ============================================================================
-# PAGE: Q2 - PATH FINDER
+# PAGE: Q2 - DISJOINT PATH FINDER
 # ============================================================================
 elif page == "Q2: Path Finder":
-    st.header("Q2: Shortest Path & K-Disjoint Paths")
-    create_algorithm_info_panel("Dijkstra")
+    st.header("Q2: K-Disjoint Paths")
+    create_algorithm_info_panel("Disjoint Path Finder")
     
     col1, col2 = st.columns([2, 1])
     
@@ -140,7 +140,7 @@ elif page == "Q2: Path Finder":
         render_graph_with_pyvis(graph, height=500)
     
     with col2:
-        st.subheader("Find Paths")
+        st.subheader("Find Disjoint Paths")
         
         all_cities = sorted(graph.get_all_cities())
         
@@ -148,20 +148,10 @@ elif page == "Q2: Path Finder":
         end = st.selectbox("To", all_cities, key="path_end", index=min(1, len(all_cities)-1))
         
         if start != end:
-            if st.button("Shortest Path", use_container_width=True):
-                path, dist = dijkstra_shortest_path(graph, start, end)
-                st.session_state.shortest_path = (path, dist)
-            
             k = st.number_input("# Disjoint Paths", 1, 5, 2, key="k")
-            if st.button("K-Disjoint Paths", use_container_width=True):
+            if st.button("Find K-Disjoint Paths", use_container_width=True):
                 paths = find_k_disjoint_paths(graph, start, end, k)
                 st.session_state.disjoint_paths = paths
-        
-        if 'shortest_path' in st.session_state:
-            path, dist = st.session_state.shortest_path
-            st.success("Shortest Path Found")
-            st.write(f"Path: {' → '.join(map(str, path))}")
-            st.metric("Distance", dist)
         
         if 'disjoint_paths' in st.session_state:
             paths = st.session_state.disjoint_paths
@@ -174,32 +164,94 @@ elif page == "Q2: Path Finder":
 # ============================================================================
 elif page == "Q3: Tree Optimizer":
     st.header("Q3: AVL Tree Rebalancing")
-    create_algorithm_info_panel("AVL Rebalance")
     
-    col1, col2, col3 = st.columns([1, 1, 1])
+    st.markdown("""
+    **Objective:** Optimize the command hierarchy tree to minimize communication latency.
     
-    with col1:
-        st.subheader("Original Tree")
-        visualize_tree(command_tree, "before")
+    **Algorithm:** AVL Tree Rebalancing
+    - Performs rotations to maintain balance
+    - Minimizes the longest path from HQ to any command center
+    - Time Complexity: O(log n) per operation
+    """)
+    
+    st.divider()
+    
+    # Before optimization
+    st.subheader("📊 Current Tree Structure")
+    
+    col_before, col_info = st.columns([2, 1])
+    
+    with col_before:
+        visualize_tree(command_tree, "Original Command Hierarchy")
+    
+    with col_info:
         analysis_before = analyze_tree_balance(command_tree)
         st.metric("Height", analysis_before['height'])
-        st.metric("Balanced?", "Yes" if analysis_before['is_balanced'] else "No")
+        st.metric("Balanced?", "✓ Yes" if analysis_before['is_balanced'] else "✗ No")
+        
+        if not analysis_before['is_balanced']:
+            st.warning("⚠️ Tree is unbalanced - optimize to improve performance")
     
-    with col2:
-        st.subheader("Controls")
-        st.write("")
-        if st.button("Rebalance", use_container_width=True, key="rebal"):
-            balanced = rebalance_tree(command_tree)
-            st.session_state.balanced_tree = balanced
-            st.success("Rebalancing complete!")
+    st.divider()
     
-    with col3:
-        st.subheader("Balanced Tree")
-        if 'balanced_tree' in st.session_state:
-            visualize_tree(st.session_state.balanced_tree, "after")
+    # Optimization button
+    st.subheader("🔧 Optimization")
+    
+    col_btn = st.columns([1, 3])[0]
+    with col_btn:
+        if st.button("Optimize (Rebalance)", use_container_width=True, key="rebal"):
+            with st.spinner("Rebalancing tree..."):
+                balanced = rebalance_tree(command_tree)
+                st.session_state.balanced_tree = balanced
+                st.session_state.optimization_done = True
+            st.success("✓ Rebalancing complete!")
+    
+    # After optimization
+    if st.session_state.get('optimization_done'):
+        st.divider()
+        st.subheader("📈 Optimized Tree Structure")
+        
+        col_after, col_info2 = st.columns([2, 1])
+        
+        with col_after:
+            visualize_tree(st.session_state.balanced_tree, "Optimized Command Hierarchy")
+        
+        with col_info2:
             analysis_after = analyze_tree_balance(st.session_state.balanced_tree)
             st.metric("Height", analysis_after['height'])
-            st.metric("Balanced?", "Yes" if analysis_after['is_balanced'] else "No")
+            st.metric("Balanced?", "✓ Yes" if analysis_after['is_balanced'] else "✗ No")
+            
+            height_reduction = analysis_before['height'] - analysis_after['height']
+            if height_reduction > 0:
+                st.success(f"📉 Height reduced by {height_reduction}")
+        
+        # Comparison
+        st.divider()
+        st.subheader("📊 Before vs After Comparison")
+        
+        comparison_data = {
+            "Metric": ["Height", "Balanced", "Max Path Length"],
+            "Before": [
+                analysis_before['height'],
+                "Yes" if analysis_before['is_balanced'] else "No",
+                analysis_before['height']
+            ],
+            "After": [
+                analysis_after['height'],
+                "Yes" if analysis_after['is_balanced'] else "No",
+                analysis_after['height']
+            ]
+        }
+        
+        df_comparison = pd.DataFrame(comparison_data)
+        st.dataframe(df_comparison, use_container_width=True)
+        
+        st.markdown("""
+        **Impact:** 
+        - Reduced tree height improves communication latency
+        - Balanced tree ensures fair distribution of command paths
+        - All nodes are at most ⌈log₂(n)⌉ levels from HQ
+        """)
 
 # ============================================================================
 # PAGE: Q4 - FAILURE SIMULATION
@@ -212,34 +264,180 @@ elif page == "Q4: Failure Simulation":
     
     with col1:
         st.subheader("Network")
-        render_graph_with_pyvis(graph, height=400)
+        highlight_nodes = None
+        if 'failure_result' in st.session_state:
+            result = st.session_state.failure_result
+            highlight_nodes = {}
+            failed_node = result.get('failed_node')
+            if failed_node is not None:
+                highlight_nodes[failed_node] = '#808080'  # Failed node in grey
+
+        render_graph_with_pyvis(graph, height=400, highlight_nodes=highlight_nodes)
     
     with col2:
         st.subheader("Test Failure")
         
         all_cities = sorted(graph.get_all_cities())
+        start_node = st.selectbox("Start", all_cities, key="start_city")
+        goal_node = st.selectbox("Goal", all_cities, key="goal_city", index=min(1, len(all_cities) - 1))
         failed = st.selectbox("Fail City", all_cities, key="fail_city")
         
         if st.button("Simulate", use_container_width=True):
             analyzer = FailureAnalyzer(graph)
             result = analyzer.analyze_node_failure(failed)
             st.session_state.failure_result = result
+
+            # Shortest path before failure
+            path_before, dist_before = dijkstra_shortest_path(graph, start_node, goal_node)
+
+            # Shortest path after failure
+            graph.disable_city(failed)
+            path_after, dist_after = dijkstra_shortest_path(graph, start_node, goal_node)
+            graph.enable_city(failed)
+
+            # Baseline shortest paths from Start
+            baseline_paths = {}
+            baseline_distances = {}
+            for city in all_cities:
+                if city == start_node:
+                    continue
+                path, dist = dijkstra_shortest_path(graph, start_node, city)
+                baseline_paths[city] = path
+                baseline_distances[city] = dist
+
+            # Recomputed shortest paths after failure
+            graph.disable_city(failed)
+            new_paths = {}
+            new_distances = {}
+            for city in all_cities:
+                if city == start_node or city == failed:
+                    continue
+                path, dist = dijkstra_shortest_path(graph, start_node, city)
+                new_paths[city] = path
+                new_distances[city] = dist
+            graph.enable_city(failed)
+
+            st.session_state.failure_paths = {
+                'start': start_node,
+                'goal': goal_node,
+                'failed': failed,
+                'path_before': path_before,
+                'dist_before': dist_before,
+                'path_after': path_after,
+                'dist_after': dist_after,
+                'baseline_paths': baseline_paths,
+                'baseline_distances': baseline_distances,
+                'new_paths': new_paths,
+                'new_distances': new_distances
+            }
     
     with col3:
         if 'failure_result' in st.session_state:
             result = st.session_state.failure_result
             st.subheader("Impact")
             st.metric("Affected Nodes", len(result['affected_nodes']))
-            st.metric("Disconnected", len(result['disconnected_nodes']))
-            impact = (len(result['disconnected_nodes']) / len(all_cities) * 100) if all_cities else 0
+            st.metric("Disconnected", len(result.get('isolated_nodes', [])))
+            impact = result.get('connectivity_loss', 0)
             st.metric("Impact %", f"{impact:.1f}%")
+
+            if 'failure_paths' in st.session_state:
+                path_info = st.session_state.failure_paths
+                baseline_distances = path_info['baseline_distances']
+                new_distances = path_info['new_distances']
+                baseline_paths = path_info['baseline_paths']
+                new_paths = path_info['new_paths']
+                failed = path_info['failed']
+                start_node = path_info['start']
+                goal_node = path_info['goal']
+
+                rows = []
+                total_increase = 0
+                increase_count = 0
+
+                for city in all_cities:
+                    if city == start_node or city == failed:
+                        continue
+                    base = baseline_distances.get(city, float('inf'))
+                    new = new_distances.get(city, float('inf'))
+                    base_path = baseline_paths.get(city)
+                    new_path = new_paths.get(city)
+
+                    if new == float('inf'):
+                        status = "Disconnected"
+                        increase = "∞"
+                    else:
+                        status = "Connected"
+                        if base == float('inf'):
+                            increase = "N/A"
+                        else:
+                            delta = new - base
+                            increase = delta
+                            total_increase += max(delta, 0)
+                            increase_count += 1
+
+                    rows.append({
+                        "City": city,
+                        "Baseline Path": " → ".join(map(str, base_path)) if base_path else "N/A",
+                        "Baseline Distance": "∞" if base == float('inf') else base,
+                        "New Path": " → ".join(map(str, new_path)) if new_path else "Disconnected",
+                        "New Distance": "∞" if new == float('inf') else new,
+                        "Increase": increase,
+                        "Status": status
+                    })
+
+                st.divider()
+                st.subheader("Recomputed Shortest Paths (from Start)")
+                st.dataframe(pd.DataFrame(rows), use_container_width=True)
+
+                if increase_count > 0:
+                    avg_increase = total_increase / increase_count
+                    st.metric("Avg. Increase in Delivery Time", f"{avg_increase:.2f}")
+
+    # Shortest path canvas
+    if 'failure_paths' in st.session_state:
+        path_info = st.session_state.failure_paths
+        path_after = path_info.get('path_after')
+        start_node = path_info['start']
+        goal_node = path_info['goal']
+        failed = path_info['failed']
+
+        st.divider()
+        st.subheader("Shortest Path After Failure")
+
+        highlight_nodes = {
+            failed: '#808080'  # Failed node in grey
+        }
+
+        highlight_edges = []
+        if path_after and len(path_after) > 1:
+            highlight_edges = list(zip(path_after[:-1], path_after[1:]))
+
+        render_graph_with_pyvis(
+            graph,
+            height=450,
+            highlight_nodes=highlight_nodes,
+            highlight_edges=highlight_edges
+        )
+
+        if path_after is None:
+            st.warning("No available path after failure.")
 
 # ============================================================================
 # PAGE: Q5 - GRAPH COLORING
 # ============================================================================
 elif page == "Q5: Graph Coloring":
-    st.header("Q5: Graph Coloring (Bonus)")
-    create_algorithm_info_panel("Graph Coloring")
+    st.header("Q5: Graph Coloring - Frequency Assignment")
+    
+    st.markdown("""
+    **Objective:** Assign frequencies to communication hubs such that no adjacent hubs use the same channel.
+    
+    **Algorithm:** Greedy Graph Coloring
+    - Ensures no two adjacent nodes share the same frequency
+    - Minimizes interference in the communication network
+    - Time Complexity: O(V + E)
+    """)
+    
+    st.divider()
     
     col1, col2 = st.columns([2, 1])
     
@@ -248,23 +446,67 @@ elif page == "Q5: Graph Coloring":
         render_graph_with_pyvis(graph, height=500)
     
     with col2:
-        st.subheader("Compute Coloring")
+        st.subheader("Assign Frequencies")
         
         if st.button("Color Graph", use_container_width=True):
             coloring, chromatic = greedy_graph_coloring(graph)
             is_valid, violations = validate_coloring(graph, coloring)
             analysis = analyze_coloring_efficiency(graph, coloring)
             st.session_state.coloring = (coloring, chromatic, is_valid)
+            st.rerun()
         
         if 'coloring' in st.session_state:
             coloring, chromatic, is_valid = st.session_state.coloring
-            st.success("Coloring Complete")
-            st.metric("Colors Used", chromatic)
-            st.metric("Valid?", "Yes" if is_valid else "No")
+            st.success("✓ Coloring Complete")
+            st.metric("Frequencies Used", chromatic)
+            st.metric("Valid?", "✓ Yes" if is_valid else "✗ No")
             
             st.divider()
+            st.write("**Frequency Assignment:**")
             for city in sorted(coloring.keys()):
-                st.write(f"City {city}: Color {coloring[city]}")
+                st.write(f"Hub {city}: Frequency {coloring[city] + 1}")
+    
+    # Colored graph visualization
+    if 'coloring' in st.session_state:
+        st.divider()
+        st.subheader("📡 Frequency-Colored Network")
+        
+        coloring, chromatic, is_valid = st.session_state.coloring
+        
+        # Color palette for frequencies (similar to reference image)
+        frequency_colors = [
+            '#E74C3C',  # Red - Frequency 1
+            '#3498DB',  # Blue - Frequency 2
+            '#2ECC71',  # Green - Frequency 3
+            '#F39C12',  # Orange - Frequency 4
+            '#9B59B6',  # Purple - Frequency 5
+            '#1ABC9C',  # Teal - Frequency 6
+            '#E67E22',  # Dark Orange - Frequency 7
+            '#34495E',  # Dark Gray - Frequency 8
+        ]
+        
+        # Map nodes to colors
+        node_colors = {}
+        for node, color_idx in coloring.items():
+            node_colors[node] = frequency_colors[color_idx % len(frequency_colors)]
+        
+        render_graph_with_pyvis(graph, height=500, node_colors=node_colors)
+        
+        # Frequency legend
+        st.divider()
+        st.subheader("Frequency Legend")
+        
+        legend_cols = st.columns(min(chromatic, 4))
+        for i in range(chromatic):
+            with legend_cols[i % 4]:
+                color = frequency_colors[i % len(frequency_colors)]
+                st.markdown(f"""
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 30px; height: 30px; background-color: {color}; border-radius: 50%;"></div>
+                    <span style="font-size: 16px;"><b>Frequency {i + 1}</b></span>
+                </div>
+                """, unsafe_allow_html=True)
+                st.write("")
 
 st.divider()
 st.markdown("**Emergency Network Simulator** | All algorithms implemented from scratch")
