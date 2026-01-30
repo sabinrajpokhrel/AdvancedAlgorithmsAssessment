@@ -7,6 +7,23 @@ Graph Structure from Diagram (a):
 - Based on actual distances between Polish cities
 - Start: Glogow (blue node)
 - Goal: Plock (red node)
+
+APPROACH EXPLANATION:
+I implemented Depth-First Search using a stack-based OPEN list.
+The algorithm works by:
+1. Starting at Glogow, pushing it into a stack (OPEN list)
+2. Repeatedly popping the most recently added node from OPEN (LIFO behavior)
+3. If the popped node is the goal (Plock), return the path and distance
+4. Otherwise, add the node to CLOSED (visited) set
+5. Push all unvisited neighbors onto the OPEN stack
+6. Continue until goal is found or OPEN becomes empty
+
+Key properties:
+- Uses stack for OPEN list (LIFO order)
+- Does NOT guarantee shortest path (may find longer routes)
+- Space-efficient: stores only one path at a time on the stack
+- Time Complexity: O(V + E) where V=vertices, E=edges
+- Space Complexity: O(h) where h=maximum depth of search tree
 """
 
 from collections import deque
@@ -215,5 +232,11 @@ Remarks:
 - DFS explores deep paths first using stack (LIFO) data structure.
 - Does not guarantee optimal (shortest) path; finds 'a' solution, not necessarily the best.
 - Memory efficient compared to BFS as it stores only one path at a time.
-- Path found depends on the order neighbors are explored.
+- Path found depends on the order neighbors are explored (neighbor ordering in adjacency list).
+- Suitable when exploring deep solutions or when memory is limited.
+- The CLOSED set prevents revisiting nodes and infinite loops.
+- In this graph, DFS from Glogow may traverse through western cities (Wroclaw, Opole)
+  before reaching Plock via the eastern route (Poznan, Bydgoszcz, Wloclawek).
+- Time complexity O(V+E) is the same as BFS, but constant factors are lower
+  because stack operations are faster than queue operations.
 """

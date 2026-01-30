@@ -7,6 +7,24 @@ Graph Structure from Diagram (a):
 - Based on actual distances between Polish cities
 - Start: Glogow (blue node)
 - Goal: Plock (red node)
+
+APPROACH EXPLANATION:
+I implemented Breadth-First Search using a queue-based OPEN list.
+The algorithm works by:
+1. Starting at Glogow, enqueueing it into a queue (OPEN list)
+2. Repeatedly dequeuing the oldest added node from OPEN (FIFO behavior)
+3. If the dequeued node is the goal (Plock), return the path and distance
+4. Otherwise, add the node to CLOSED (visited) set
+5. Enqueue all unvisited neighbors into the OPEN queue
+6. Continue until goal is found or OPEN becomes empty
+
+Key properties:
+- Uses queue for OPEN list (FIFO order)
+- GUARANTEES shortest path in unweighted graphs (by number of edges)
+- For weighted graphs, BFS finds path with fewest nodes, not minimum distance
+- Space-intensive: stores all nodes at current level before processing next level
+- Time Complexity: O(V + E) where V=vertices, E=edges
+- Space Complexity: O(V) for storing all frontier nodes at max breadth
 """
 
 from collections import deque
@@ -253,7 +271,14 @@ Iterations Required: 10
 """
 Remarks:
 - BFS explores nodes level-by-level using queue (FIFO) data structure.
-- Guarantees minimum hop path (fewest number of edges), not necessarily shortest distance.
-- Uses more memory than DFS as it must store all nodes at the current level.
+- GUARANTEES minimum hop path (fewest number of edges), not necessarily shortest distance.
+  In this weighted graph, BFS finds path with fewest cities but may have higher total km.
+- Uses more memory than DFS as it must store all nodes at current frontier level.
 - Suitable when solution is likely to be shallow in the search tree.
+- Complete algorithm: always finds solution if one exists in finite graphs.
+- The queue (deque) allows O(1) append and popleft operations, ensuring efficiency.
+- Unlike DFS which can take deep exploration paths, BFS systematically checks all
+  neighbors at distance 1, then distance 2, then distance 3, etc.
+- For this Polish cities graph, BFS will prefer direct short routes over long detours,
+  though distance is still secondary to hop count (number of cities in path).
 """

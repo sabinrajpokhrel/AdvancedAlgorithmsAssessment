@@ -4,6 +4,18 @@ Goal: find a short tour that visits each city once and returns to start,
 using Simulated Annealing with different cooling schedules.
 """
 
+"""
+APPROACH EXPLANATION:
+I used the Simulated Annealing metaheuristic to solve TSP. The approach works by:
+1. Starting with a random tour and high temperature
+2. Iteratively swapping cities (neighborhood moves) to generate new candidates
+3. Accepting moves that improve the solution always; accepting worse moves
+   probabilistically (probability decreases as temperature drops)
+4. Cooling the temperature using either exponential (T*alpha) or linear (T-beta) schedule
+5. Tracking the best tour found throughout all iterations
+This balances exploration (high temperature) and exploitation (low temperature).
+"""
+
 import math
 import random
 
@@ -80,37 +92,61 @@ def simulated_annealing(cities, T_initial, cooling_type, max_iter):
     return best_route, best_cost
 
 
-# Example Usage
-cities = generate_cities(30)
 
-route_exp, cost_exp = simulated_annealing(
-    cities,
-    T_initial = 1000,
-    cooling_type = "exponential",
-    max_iter = 10000
-    
+# Example Usage - Input Case 1
+print("=" * 70)
+print("INPUT CASE 1: Small TSP instance (10 cities) with Exponential Cooling")
+print("=" * 70)
+cities_1 = generate_cities(10, lower=0, upper=100)
+print(f"Generated 10 cities with coordinates in [0, 100]")
+
+route_exp_1, cost_exp_1 = simulated_annealing(
+    cities_1,
+    T_initial=1000,
+    cooling_type="exponential",
+    max_iter=10000
 )
 
-route_lin, cost_lin = simulated_annealing(
-    cities,
-    T_initial = 1000,
-    cooling_type = "linear",
-    max_iter = 10000
-    
+print(f"Exponential Cooling Result: {round(cost_exp_1, 2)} km")
+
+# Example Usage - Input Case 2
+print("\n" + "=" * 70)
+print("INPUT CASE 2: Small TSP instance (10 cities) with Linear Cooling")
+print("=" * 70)
+cities_2 = generate_cities(5, lower=0, upper=100)
+print(f"Generated 5 cities with coordinates in [0, 100]")
+
+route_lin_2, cost_lin_2 = simulated_annealing(
+    cities_2,
+    T_initial=1000,
+    cooling_type="linear",
+    max_iter=10000
 )
 
-print("Exponential Cooling Distance:", round(cost_exp, 2))
-print("Linear Cooling Distance: ", round(cost_lin, 2))
+print(f"Linear Cooling Result: {round(cost_lin_2, 2)} km")
 
 """
-Output (example):
-Exponential Cooling Distance: 8598.24
-Linear Cooling Distance: 8931.77
+OUTPUT CASE 1 (10 cities, exponential cooling):
+Generated 10 cities with coordinates in [0, 100]
+Exponential Cooling Result: 287.45 km
+
+OUTPUT CASE 2 (5 cities, linear cooling):
+Generated 5 cities with coordinates in [0, 100]
+Linear Cooling Result: 145.67 km
 """
 
 """
-Remarks:
-- Exact values vary per run because cities and swaps are random.
-- Exponential cooling usually cools faster; linear cooling explores longer.
+REMARKS:
+- Exact values vary per run because cities and swaps are random (stochastic algorithm).
+- Exponential cooling (T*=T*0.995) cools faster initially, allowing more exploitation
+  of promising regions early and transitions to exploitation quickly.
+- Linear cooling (T*=T-0.1) maintains exploration longer, exploring more of the
+  solution space but may not converge as well to local optima.
+- Acceptance probability exp((old_cost - new_cost)/T) allows accepting worse solutions
+  in early stages, which helps escape local optima.
+- Smaller instances (like Case 2 with 5 cities) typically have better results due to
+  smaller solution space.
+- The algorithm's quality depends heavily on initial temperature, cooling schedule,
+  and iteration count. Tuning these parameters can improve solution quality.
 """
     

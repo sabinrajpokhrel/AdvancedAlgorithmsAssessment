@@ -172,10 +172,12 @@ def multithreaded_sort(input_list):
 def demonstrate():
     """
     Demonstration function with various test cases.
+    INPUT CASE 1: [7, 12, 19, 3, 18, 4, 2, 6, 15, 8] - Original example
+    INPUT CASE 2: [64, 34, 25, 12, 22, 11, 90, 88] - Larger values with 8 elements
     """
     test_cases = [
-        [7, 12, 19, 3, 18, 4, 2, 6, 15, 8],  # From the diagram
-        [64, 34, 25, 12, 22, 11, 90, 88],
+        [7, 12, 19, 3, 18, 4, 2, 6, 15, 8],  # From the diagram - Case 1
+        [64, 34, 25, 12, 22, 11, 90, 88],    # Additional test - Case 2
         [5, 2, 8, 1, 9],
         [100, 50, 25, 75, 10, 90, 40, 60],
     ]
@@ -230,7 +232,7 @@ if __name__ == "__main__":
     print("=" * 60)
 
 """
-Output (example for test case [7, 12, 19, 3, 18, 4, 2, 6, 15, 8]):
+OUTPUT CASE 1 ([7, 12, 19, 3, 18, 4, 2, 6, 15, 8]):
 ============================================================
 MULTITHREADED SORTING APPLICATION
 ============================================================
@@ -267,13 +269,62 @@ Phase 2 Complete: Merging thread finished
 Final sorted list: [2, 3, 4, 6, 7, 8, 12, 15, 18, 19]
 ============================================================
 
+VERIFICATION: Sorting is CORRECT!
+
+OUTPUT CASE 2 ([64, 34, 25, 12, 22, 11, 90, 88]):
+============================================================
+MULTITHREADED SORTING APPLICATION
+============================================================
+Original list: [64, 34, 25, 12, 22, 11, 90, 88]
+List size: 8
+============================================================
+
+Phase 1: Creating sorting threads...
+Sorting Thread 0 started: sorting elements from index 0 to 3
+Sorting Thread 0: Original sublist = [64, 34, 25, 12]
+Sorting Thread 1 started: sorting elements from index 4 to 7
+Sorting Thread 1: Original sublist = [22, 11, 90, 88]
+Sorting Thread 0: Sorted sublist = [12, 25, 34, 64]
+Sorting Thread 1: Sorted sublist = [11, 22, 88, 90]
+Sorting Thread 0 completed
+Sorting Thread 1 completed
+
+============================================================
+Phase 1 Complete: Both sorting threads finished
+Array after sorting threads: [12, 25, 34, 64, 11, 22, 88, 90]
+============================================================
+
+Phase 2: Creating merging thread...
+Merging Thread started: merging two sorted sublists
+Merging Thread: Left half = [12, 25, 34, 64]
+Merging Thread: Right half = [11, 22, 88, 90]
+Merging Thread: Merged result = [11, 12, 22, 25, 34, 64, 88, 90]
+Merging Thread completed
+
+============================================================
+Phase 2 Complete: Merging thread finished
+============================================================
+
+Final sorted list: [11, 12, 22, 25, 34, 64, 88, 90]
+============================================================
+
 ✓ VERIFICATION: Sorting is CORRECT!
 """
 
 """
-Remarks:
-- The two sorting threads run concurrently, reducing sorting time compared to single-threaded.
-- Thread execution order may vary between runs, but the final result remains consistent.
-- Lock usage ensures safe concurrent access to shared global arrays.
-- The diagram in the question matches this implementation: two sorting threads followed by one merge thread.
+REMARKS:
+- The two sorting threads (Thread 0 and Thread 1) run concurrently, reducing
+  overall sorting time compared to sequential single-threaded execution.
+- Thread execution order may vary between runs (non-deterministic interleaving),
+  but the final result remains consistent and correct due to proper synchronization.
+- Lock usage with context managers (with lock:) ensures safe concurrent access
+  to shared global arrays (original_array and sorted_array).
+- Each sorting thread independently performs merge sort on its half (O(n/2 * log(n/2))),
+  while the main thread waits (join()) for both to complete.
+- The merging thread then combines two already-sorted sublists in O(n) time.
+- Total time complexity: O(n log n) for the sorting phase (parallelized) + O(n) for merge.
+- Without threading, the sequential merge sort would take O(n log n) total time.
+- The lock prevents race conditions when threads access/modify shared data simultaneously.
+- This design demonstrates effective thread coordination using join() to establish
+  synchronization barriers between computation phases.
 """

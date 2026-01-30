@@ -384,8 +384,19 @@ Path Analysis:
 """
 Remarks:
 - A* combines benefits of uniform-cost search (optimality) and greedy search (efficiency).
-- The straight-line distance heuristic is admissible (never overestimates), guaranteeing optimal path.
-- A* expands fewer nodes than BFS/DFS by prioritizing nodes with lower f(n) values.
-- Perfect for robot parcel delivery: finds shortest route efficiently using geographic heuristic.
-- Superior to DFS (not optimal) and BFS (explores too many nodes) for weighted graphs.
+- The straight-line distance heuristic h(n) is admissible (never overestimates actual cost),
+  which guarantees that A* finds the optimal (shortest distance) path.
+- A* expands significantly fewer nodes than BFS/DFS by prioritizing nodes with lower
+  f(n) = g(n) + h(n) values, making it more efficient for large graphs.
+- For this Polish cities problem, A* uses geographic distance estimates (Diagram b)
+  to guide search toward Plock, avoiding unnecessary exploration of distant areas.
+- Perfect for practical routing problems: finds shortest distance efficiently using
+  domain knowledge (straight-line distances as heuristic).
+- Superior to DFS (not optimal), BFS (expands too many nodes), and greedy search
+  (not necessarily optimal) for weighted graph pathfinding.
+- The priority queue (heapq) enables efficient O(log n) insertion and extraction,
+  maintaining A* efficiency even with thousands of nodes.
+- Heuristic quality directly impacts A* efficiency: better heuristics (tighter bounds)
+  reduce nodes expanded but must never overestimate (admissibility requirement).
+- Time complexity depends on heuristic quality but generally O(b^d) where d is solution depth.
 """

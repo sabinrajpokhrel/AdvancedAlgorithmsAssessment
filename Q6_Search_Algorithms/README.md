@@ -319,7 +319,7 @@ python a_star.py > astar_output.txt
 
 For the robot parcel delivery problem:
 
-**Winner: A* Search Algorithm** 🏆
+**Winner: A* Search Algorithm** 
 
 **Justification:**
 1. Finds optimal path (shortest distance)
